@@ -11,13 +11,26 @@ public class PlayerCtrl : MonoBehaviour {
     [Tooltip("positive speed boost intiger")]
 
     public int speedBoost;
-    public int jumpSpeed;
+    public float jumpSpeed;
+
+    public bool isGrounded;
+    public Transform feet;
+    public float feetRadius;
+    public LayerMask whatIsGround;
+    public float boxWidth;
+    public float boxHeight;
+    public float delayForDoubleJump;
+    public GameObject leftBullet, rightBullet;
+
+    public Transform leftBulletSpawnPos, rightBulletSpawnPos;
 
     Rigidbody2D rbody;
     SpriteRenderer sr;
     Animator anim;
 
-    bool isJumping;
+    bool leftPressed, rightPressed;
+
+    bool isJumping, canDoubleJump;
 	
 	void  Start ()
     {
@@ -28,6 +41,9 @@ public class PlayerCtrl : MonoBehaviour {
 	
 	void Update ()
     {
+        // isGrounded = Physics2D.OverlapCircle(feet.position, feetRadius, whatIsGround);
+        isGrounded = Physics2D.OverlapBox(new Vector2(feet.position.x, feet.position.y), new Vector2(boxWidth, boxHeight), 360.0f, whatIsGround);
+
         float playerSpeed = Input.GetAxisRaw("Horizontal"); // 1, -1, 0
         
         playerSpeed *= speedBoost;
@@ -45,7 +61,27 @@ public class PlayerCtrl : MonoBehaviour {
         {
             Jump(playerSpeed);
         }
-	}
+
+        if (Input.GetButtonDown("Fire1"))
+        {
+            FireBullets();
+        }
+
+        if (leftPressed)
+        {
+            MoveHorizontal(-speedBoost);
+        }
+
+        if (rightPressed)
+        {
+            MoveHorizontal(speedBoost);
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawWireCube(feet.position, new Vector3(boxWidth, boxHeight, 0));
+    }
 
     void MoveHorizontal(float playerSpeed)
     {
@@ -84,9 +120,58 @@ public class PlayerCtrl : MonoBehaviour {
 
     void Jump(float playerSpeed)
     {
-        isJumping = true;
-        rbody.AddForce(new Vector2(playerSpeed, jumpSpeed));
-        anim.SetInteger("State", 2);
+        if (isGrounded)
+        {
+            isJumping = true;
+            rbody.AddForce(new Vector2(playerSpeed, jumpSpeed));
+            anim.SetInteger("State", 2);
+
+            Invoke("EnableDoubleJump", delayForDoubleJump);
+        }
+
+        if(canDoubleJump && !isGrounded)
+        {
+            rbody.velocity = Vector2.zero;
+            rbody.AddForce(new Vector2(playerSpeed, jumpSpeed));
+            anim.SetInteger("State", 2);
+
+            canDoubleJump = false;
+        }
+    }
+
+    void EnableDoubleJump()
+    {
+        canDoubleJump = true;
+    }
+
+    void FireBullets()
+    {
+        if (sr.flipX)
+        {
+            Instantiate(leftBullet, leftBulletSpawnPos.position, Quaternion.identity);
+        }
+        else
+        {
+            Instantiate(rightBullet, rightBulletSpawnPos.position, Quaternion.identity);
+        }
+    }
+
+    public void MobileMoveLeft()
+    {
+        leftPressed = true;
+    }
+
+    public void MobileMoveRight()
+    {
+        rightPressed = true;
+    }
+
+    public void MobileStop()
+    {
+        rightPressed = false;
+        leftPressed = false;
+
+        StopMoving();
     }
 
     void OnCollisionEnter2D(Collision2D collision)

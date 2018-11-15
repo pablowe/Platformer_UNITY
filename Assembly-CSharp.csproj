@@ -61,7 +61,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\CameraCtrl.cs" />
+    <Compile Include="Assets\DestroyWithDelay.cs" />
     <Compile Include="Assets\MenuCtrl.cs" />
+    <Compile Include="Assets\MobileUICtrl.cs" />
+    <Compile Include="Assets\PlayerBulletCtrl.cs" />
     <Compile Include="Assets\Scripts\PlayerCtrl.cs" />
     <None Include="Assets\Sprites\Actors\Enemies\monster_round\get more at bevouliin_dot_com.txt" />
     <None Include="Assets\Sprites\Actors\Enemies\monster_sqaure\get more at bevouliin_dot_com.txt" />
